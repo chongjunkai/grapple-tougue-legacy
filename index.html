@@ -189,7 +189,7 @@
                 <ul>
                     <li>Use <span class="highlight">LEFT/RIGHT ARROW KEYS</span> to move your frog</li>
                     <li>Press <span class="highlight">SPACEBAR</span> to shoot your tongue at platforms</li>
-                    <li>Release SPACEBAR to detach and swing freely</li>
+                    <li>Press SPACEBAR again to detach and swing freely</li>
                     <li>Collect all <span class="highlight">YELLOW FIREFLIES</span> to win</li>
                     <li>Avoid <span class="highlight">RED THORNS</span> or it's game over!</li>
                 </ul>
@@ -233,7 +233,6 @@
         // Game constants
         const GRAVITY = 0.5;
         const PLAYER_SPEED = 5;
-        const JUMP_FORCE = -12;
         const TOTAL_FIREFLIES = 5;
         
         // Game state
@@ -241,17 +240,18 @@
         let score = 0;
         let gameTime = 0;
         let gameLoop;
+        let spacePressed = false; // Track spacebar state
         
         // Player properties
         const player = {
-            x: 100,
-            y: 300,
+            x: 80, // Moved to safer starting position
+            y: 420, // On the ground platform
             width: 30,
             height: 30,
             vx: 0,
             vy: 0,
             color: '#4CAF50',
-            isOnGround: false,
+            isOnGround: true,
             grappled: false,
             grapplePoint: null,
             tongueLength: 0
@@ -280,8 +280,7 @@
         // Key state tracking
         const keys = {
             ArrowLeft: false,
-            ArrowRight: false,
-            ' ': false
+            ArrowRight: false
         };
         
         // Initialize game
@@ -289,13 +288,14 @@
             gameState = 'playing';
             score = 0;
             gameTime = 0;
+            spacePressed = false;
             
-            // Reset player
-            player.x = 100;
-            player.y = 300;
+            // Reset player to safe starting position
+            player.x = 80;
+            player.y = 420;
             player.vx = 0;
             player.vy = 0;
-            player.isOnGround = false;
+            player.isOnGround = true;
             player.grappled = false;
             player.grapplePoint = null;
             player.tongueLength = 0;
@@ -306,34 +306,32 @@
             thorns = [];
             particles = [];
             
-            // Create platforms
+            // Create platforms - safe layout
             platforms = [
-                {x: 0, y: 450, width: 200, height: 30, color: '#7B1FA2'},
-                {x: 250, y: 400, width: 150, height: 30, color: '#7B1FA2'},
-                {x: 450, y: 350, width: 190, height: 30, color: '#7B1FA2'},
-                {x: 100, y: 300, width: 120, height: 30, color: '#7B1FA2'},
-                {x: 300, y: 250, width: 150, height: 30, color: '#7B1FA2'},
-                {x: 500, y: 200, width: 140, height: 30, color: '#7B1FA2'},
-                {x: 200, y: 150, width: 180, height: 30, color: '#7B1FA2'},
-                {x: 0, y: 100, width: 150, height: 30, color: '#7B1FA2'}
+                {x: 0, y: 450, width: 640, height: 30, color: '#7B1FA2'}, // Ground platform
+                {x: 100, y: 350, width: 120, height: 30, color: '#7B1FA2'},
+                {x: 300, y: 300, width: 150, height: 30, color: '#7B1FA2'},
+                {x: 500, y: 250, width: 140, height: 30, color: '#7B1FA2'},
+                {x: 200, y: 200, width: 180, height: 30, color: '#7B1FA2'},
+                {x: 400, y: 150, width: 150, height: 30, color: '#7B1FA2'}
             ];
             
-            // Create thorns (on platforms)
+            // Create thorns - away from starting position
             thorns = [
-                {x: 50, y: 420, width: 30, height: 30},
-                {x: 300, y: 370, width: 30, height: 30},
-                {x: 500, y: 320, width: 30, height: 30},
-                {x: 150, y: 270, width: 30, height: 30},
-                {x: 350, y: 220, width: 30, height: 30}
+                {x: 150, y: 320, width: 30, height: 30},
+                {x: 350, y: 270, width: 30, height: 30},
+                {x: 550, y: 220, width: 30, height: 30},
+                {x: 250, y: 170, width: 30, height: 30},
+                {x: 450, y: 120, width: 30, height: 30}
             ];
             
-            // Create fireflies at fixed positions
+            // Create fireflies at safe positions
             fireflies = [
-                {x: 150, y: 200, radius: 8, collected: false},
-                {x: 350, y: 150, radius: 8, collected: false},
-                {x: 550, y: 100, radius: 8, collected: false},
-                {x: 200, y: 350, radius: 8, collected: false},
-                {x: 400, y: 300, radius: 8, collected: false}
+                {x: 160, y: 300, radius: 8, collected: false},
+                {x: 375, y: 250, radius: 8, collected: false},
+                {x: 570, y: 200, radius: 8, collected: false},
+                {x: 290, y: 150, radius: 8, collected: false},
+                {x: 475, y: 100, radius: 8, collected: false}
             ];
             
             // Update UI
@@ -357,12 +355,12 @@
                 e.preventDefault();
             }
             
-            if (keys.hasOwnProperty(e.key)) {
-                keys[e.key] = true;
-            }
+            if (e.key === 'ArrowLeft') keys.ArrowLeft = true;
+            if (e.key === 'ArrowRight') keys.ArrowRight = true;
             
-            // Spacebar to toggle grapple
-            if (e.key === ' ' && gameState === 'playing') {
+            // Spacebar to toggle grapple (only when playing)
+            if (e.key === ' ' && gameState === 'playing' && !spacePressed) {
+                spacePressed = true;
                 if (!player.grappled) {
                     // Try to grapple to a platform
                     grappleToPlatform();
@@ -375,9 +373,9 @@
         });
         
         window.addEventListener('keyup', (e) => {
-            if (keys.hasOwnProperty(e.key)) {
-                keys[e.key] = false;
-            }
+            if (e.key === 'ArrowLeft') keys.ArrowLeft = false;
+            if (e.key === 'ArrowRight') keys.ArrowRight = false;
+            if (e.key === ' ') spacePressed = false;
         });
         
         // Button event listeners
@@ -393,7 +391,7 @@
             
             for (const platform of platforms) {
                 // Check if platform is above the player and within horizontal range
-                if (platform.y + platform.height < player.y && 
+                if (platform.y + platform.height < player.y - 10 && 
                     platform.x - 20 < player.x + player.width/2 && 
                     platform.x + platform.width + 20 > player.x + player.width/2) {
                     const dist = player.y - (platform.y + platform.height);
@@ -488,14 +486,16 @@
                 }
             }
             
-            // Thorns collision
-            for (const thorn of thorns) {
-                if (player.x < thorn.x + thorn.width &&
-                    player.x + player.width > thorn.x &&
-                    player.y < thorn.y + thorn.height &&
-                    player.y + player.height > thorn.y) {
-                    gameOver();
-                    return;
+            // Thorns collision (only check after first frame)
+            if (gameTime > 0.1) {
+                for (const thorn of thorns) {
+                    if (player.x < thorn.x + thorn.width &&
+                        player.x + player.width > thorn.x &&
+                        player.y < thorn.y + thorn.height &&
+                        player.y + player.height > thorn.y) {
+                        gameOver();
+                        return;
+                    }
                 }
             }
             
