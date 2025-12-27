@@ -87,7 +87,7 @@
         <div>Coins: <span id="coinsCollected">0</span>/<span id="totalCoins">0</span></div>
     </div>
     <div id="instructions">
-        Click to shoot grapple tongue | Collect all coins to advance | Avoid falling!
+        Click to grapple (Max 350px) | Avoid SPIKES! | Can't stick to GOO | Stick to walls!
     </div>
     <div id="levelComplete">
         <h2>Level Complete!</h2>
@@ -103,6 +103,8 @@
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
         
+        const MAX_GRAPPLE_DISTANCE = 350;
+        
         const player = {
             x: 100,
             y: 500,
@@ -116,21 +118,24 @@
             active: false,
             attachX: 0,
             attachY: 0,
-            length: 0
+            length: 0,
+            onWall: false
         };
         
         let platforms = [];
+        let gooPatches = [];
+        let spikes = [];
         let coins = [];
         let score = 0;
         let currentLevel = 1;
         let coinsCollected = 0;
         let totalCoins = 0;
         
-        const gravity = 0.4;
-        const dampening = 0.98;
+        const gravity = 0.35;
+        const dampening = 0.97;
         
         const levels = [
-            // Level 1 - Easy Tutorial
+            // Level 1 - Tutorial
             {
                 platforms: [
                     { x: 50, y: 550, width: 150, height: 20 },
@@ -138,59 +143,181 @@
                     { x: 550, y: 500, width: 150, height: 20 },
                     { x: 800, y: 400, width: 150, height: 20 }
                 ],
+                goo: [],
+                spikes: [],
                 spawnX: 125,
                 spawnY: 520
             },
-            // Level 2 - Vertical Challenge
+            // Level 2 - First Spike
             {
                 platforms: [
-                    { x: 100, y: 550, width: 120, height: 20 },
-                    { x: 350, y: 450, width: 120, height: 20 },
-                    { x: 150, y: 350, width: 120, height: 20 },
-                    { x: 450, y: 250, width: 120, height: 20 },
-                    { x: 250, y: 150, width: 120, height: 20 }
+                    { x: 100, y: 550, width: 150, height: 20 },
+                    { x: 350, y: 450, width: 150, height: 20 },
+                    { x: 600, y: 400, width: 150, height: 20 },
+                    { x: 350, y: 250, width: 150, height: 20 }
                 ],
-                spawnX: 160,
+                goo: [],
+                spikes: [
+                    { x: 200, y: 550, width: 80, height: 20 }
+                ],
+                spawnX: 175,
                 spawnY: 520
             },
-            // Level 3 - Wide Gaps
+            // Level 3 - Goo Introduction
             {
                 platforms: [
                     { x: 50, y: 500, width: 100, height: 20 },
                     { x: 400, y: 450, width: 100, height: 20 },
                     { x: 750, y: 500, width: 100, height: 20 },
-                    { x: 250, y: 300, width: 100, height: 20 },
-                    { x: 600, y: 250, width: 100, height: 20 }
+                    { x: 250, y: 300, width: 100, height: 20 }
                 ],
+                goo: [
+                    { x: 400, y: 430, width: 100, height: 20 }
+                ],
+                spikes: [],
                 spawnX: 100,
                 spawnY: 470
             },
-            // Level 4 - Zigzag
+            // Level 4 - Wall Climbing
             {
                 platforms: [
                     { x: 50, y: 550, width: 100, height: 20 },
-                    { x: 300, y: 450, width: 80, height: 20 },
-                    { x: 100, y: 350, width: 80, height: 20 },
-                    { x: 350, y: 250, width: 80, height: 20 },
-                    { x: 150, y: 150, width: 80, height: 20 },
-                    { x: 650, y: 100, width: 100, height: 20 }
+                    { x: 800, y: 450, width: 100, height: 20 },
+                    { x: 100, y: 250, width: 100, height: 20 },
+                    { x: 850, y: 150, width: 100, height: 20 }
+                ],
+                goo: [],
+                spikes: [
+                    { x: 300, y: 550, width: 80, height: 20 }
                 ],
                 spawnX: 100,
                 spawnY: 520
             },
-            // Level 5 - The Gauntlet
+            // Level 5 - Spike Gauntlet
             {
                 platforms: [
                     { x: 50, y: 520, width: 100, height: 20 },
                     { x: 250, y: 400, width: 70, height: 20 },
                     { x: 450, y: 450, width: 70, height: 20 },
                     { x: 650, y: 300, width: 70, height: 20 },
-                    { x: 500, y: 200, width: 70, height: 20 },
-                    { x: 300, y: 150, width: 70, height: 20 },
-                    { x: 550, y: 50, width: 120, height: 20 }
+                    { x: 500, y: 200, width: 70, height: 20 }
+                ],
+                goo: [],
+                spikes: [
+                    { x: 250, y: 380, width: 70, height: 20 },
+                    { x: 650, y: 280, width: 70, height: 20 }
                 ],
                 spawnX: 100,
                 spawnY: 490
+            },
+            // Level 6 - Goo Puzzle
+            {
+                platforms: [
+                    { x: 50, y: 550, width: 80, height: 20 },
+                    { x: 200, y: 450, width: 80, height: 20 },
+                    { x: 400, y: 400, width: 80, height: 20 },
+                    { x: 600, y: 350, width: 80, height: 20 },
+                    { x: 800, y: 250, width: 80, height: 20 }
+                ],
+                goo: [
+                    { x: 200, y: 430, width: 80, height: 20 },
+                    { x: 600, y: 330, width: 80, height: 20 }
+                ],
+                spikes: [],
+                spawnX: 90,
+                spawnY: 520
+            },
+            // Level 7 - Mixed Hazards
+            {
+                platforms: [
+                    { x: 50, y: 550, width: 100, height: 20 },
+                    { x: 300, y: 450, width: 80, height: 20 },
+                    { x: 550, y: 500, width: 80, height: 20 },
+                    { x: 350, y: 300, width: 80, height: 20 },
+                    { x: 700, y: 200, width: 100, height: 20 }
+                ],
+                goo: [
+                    { x: 300, y: 430, width: 80, height: 20 }
+                ],
+                spikes: [
+                    { x: 550, y: 480, width: 80, height: 20 },
+                    { x: 350, y: 280, width: 80, height: 20 }
+                ],
+                spawnX: 100,
+                spawnY: 520
+            },
+            // Level 8 - The Tower
+            {
+                platforms: [
+                    { x: 50, y: 550, width: 100, height: 20 },
+                    { x: 850, y: 500, width: 100, height: 20 },
+                    { x: 100, y: 400, width: 80, height: 20 },
+                    { x: 800, y: 350, width: 80, height: 20 },
+                    { x: 150, y: 250, width: 80, height: 20 },
+                    { x: 750, y: 200, width: 80, height: 20 },
+                    { x: 450, y: 100, width: 100, height: 20 }
+                ],
+                goo: [
+                    { x: 100, y: 380, width: 80, height: 20 }
+                ],
+                spikes: [
+                    { x: 800, y: 330, width: 80, height: 20 },
+                    { x: 750, y: 180, width: 80, height: 20 }
+                ],
+                spawnX: 100,
+                spawnY: 520
+            },
+            // Level 9 - Precision Challenge
+            {
+                platforms: [
+                    { x: 50, y: 520, width: 80, height: 20 },
+                    { x: 250, y: 450, width: 60, height: 20 },
+                    { x: 450, y: 400, width: 60, height: 20 },
+                    { x: 650, y: 350, width: 60, height: 20 },
+                    { x: 850, y: 450, width: 60, height: 20 },
+                    { x: 700, y: 200, width: 60, height: 20 },
+                    { x: 500, y: 150, width: 60, height: 20 },
+                    { x: 300, y: 100, width: 100, height: 20 }
+                ],
+                goo: [
+                    { x: 250, y: 430, width: 60, height: 20 },
+                    { x: 850, y: 430, width: 60, height: 20 }
+                ],
+                spikes: [
+                    { x: 450, y: 380, width: 60, height: 20 },
+                    { x: 650, y: 330, width: 60, height: 20 },
+                    { x: 700, y: 180, width: 60, height: 20 }
+                ],
+                spawnX: 90,
+                spawnY: 490
+            },
+            // Level 10 - Final Gauntlet
+            {
+                platforms: [
+                    { x: 50, y: 550, width: 80, height: 20 },
+                    { x: 200, y: 480, width: 60, height: 20 },
+                    { x: 400, y: 520, width: 60, height: 20 },
+                    { x: 600, y: 450, width: 60, height: 20 },
+                    { x: 800, y: 500, width: 60, height: 20 },
+                    { x: 700, y: 350, width: 60, height: 20 },
+                    { x: 500, y: 300, width: 60, height: 20 },
+                    { x: 300, y: 250, width: 60, height: 20 },
+                    { x: 500, y: 150, width: 60, height: 20 },
+                    { x: 450, y: 50, width: 120, height: 20 }
+                ],
+                goo: [
+                    { x: 200, y: 460, width: 60, height: 20 },
+                    { x: 600, y: 430, width: 60, height: 20 },
+                    { x: 300, y: 230, width: 60, height: 20 }
+                ],
+                spikes: [
+                    { x: 400, y: 500, width: 60, height: 20 },
+                    { x: 800, y: 480, width: 60, height: 20 },
+                    { x: 700, y: 330, width: 60, height: 20 },
+                    { x: 500, y: 280, width: 60, height: 20 }
+                ],
+                spawnX: 90,
+                spawnY: 520
             }
         ];
         
@@ -203,6 +330,8 @@
             currentLevel = levelNum;
             const level = levels[levelNum - 1];
             platforms = JSON.parse(JSON.stringify(level.platforms));
+            gooPatches = JSON.parse(JSON.stringify(level.goo));
+            spikes = JSON.parse(JSON.stringify(level.spikes));
             
             player.x = level.spawnX;
             player.y = level.spawnY;
@@ -210,10 +339,10 @@
             player.vy = 0;
             grapple.active = false;
             
-            // Generate coins closer to platforms
+            // Generate coins
             coins = [];
             platforms.forEach((p, i) => {
-                if (i > 0) { // Skip first platform (spawn)
+                if (i > 0) {
                     coins.push({
                         x: p.x + p.width / 2,
                         y: p.y - 25,
@@ -267,7 +396,6 @@
             ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
             ctx.fill();
             
-            // Eye
             ctx.fillStyle = 'white';
             ctx.beginPath();
             ctx.arc(player.x - 5, player.y - 3, 4, 0, Math.PI * 2);
@@ -287,7 +415,7 @@
                 ctx.lineTo(grapple.attachX, grapple.attachY);
                 ctx.stroke();
                 
-                ctx.fillStyle = '#FF69B4';
+                ctx.fillStyle = grapple.onWall ? '#00FF00' : '#FF69B4';
                 ctx.beginPath();
                 ctx.arc(grapple.attachX, grapple.attachY, 6, 0, Math.PI * 2);
                 ctx.fill();
@@ -304,6 +432,36 @@
             });
         }
         
+        function drawGoo() {
+            gooPatches.forEach(g => {
+                ctx.fillStyle = '#7CFC00';
+                ctx.fillRect(g.x, g.y, g.width, g.height);
+                ctx.fillStyle = '#32CD32';
+                for (let i = 0; i < g.width; i += 10) {
+                    ctx.fillRect(g.x + i, g.y, 5, g.height);
+                }
+            });
+        }
+        
+        function drawSpikes() {
+            spikes.forEach(s => {
+                ctx.fillStyle = '#FF0000';
+                const numSpikes = Math.floor(s.width / 20);
+                for (let i = 0; i < numSpikes; i++) {
+                    const x = s.x + (i * s.width / numSpikes);
+                    ctx.beginPath();
+                    ctx.moveTo(x, s.y + s.height);
+                    ctx.lineTo(x + s.width / numSpikes / 2, s.y);
+                    ctx.lineTo(x + s.width / numSpikes, s.y + s.height);
+                    ctx.closePath();
+                    ctx.fill();
+                    ctx.strokeStyle = '#8B0000';
+                    ctx.lineWidth = 1;
+                    ctx.stroke();
+                }
+            });
+        }
+        
         function drawCoins() {
             coins.forEach(c => {
                 if (!c.collected) {
@@ -316,6 +474,27 @@
                     ctx.stroke();
                 }
             });
+        }
+        
+        function checkSpikeCollision() {
+            spikes.forEach(s => {
+                if (player.x + player.radius > s.x && 
+                    player.x - player.radius < s.x + s.width &&
+                    player.y + player.radius > s.y && 
+                    player.y - player.radius < s.y + s.height) {
+                    resetPlayer();
+                }
+            });
+        }
+        
+        function resetPlayer() {
+            player.x = levels[currentLevel - 1].spawnX;
+            player.y = levels[currentLevel - 1].spawnY;
+            player.vx = 0;
+            player.vy = 0;
+            grapple.active = false;
+            score = Math.max(0, score - 20);
+            document.getElementById('score').textContent = score;
         }
         
         function updatePhysics() {
@@ -356,6 +535,8 @@
                 }
             });
             
+            checkSpikeCollision();
+            
             coins.forEach(c => {
                 if (!c.collected) {
                     const dx = player.x - c.x;
@@ -373,13 +554,7 @@
             });
             
             if (player.y > canvas.height + 50) {
-                player.x = levels[currentLevel - 1].spawnX;
-                player.y = levels[currentLevel - 1].spawnY;
-                player.vx = 0;
-                player.vy = 0;
-                grapple.active = false;
-                score = Math.max(0, score - 20);
-                document.getElementById('score').textContent = score;
+                resetPlayer();
             }
             
             if (player.x < player.radius) player.x = player.radius;
@@ -390,6 +565,8 @@
             ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             drawPlatforms();
+            drawGoo();
+            drawSpikes();
             drawCoins();
             drawGrapple();
             drawPlayer();
@@ -406,17 +583,55 @@
             if (grapple.active) {
                 grapple.active = false;
             } else {
+                const dx = mouseX - player.x;
+                const dy = mouseY - player.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                
+                if (dist > MAX_GRAPPLE_DISTANCE) {
+                    return;
+                }
+                
+                // Check goo (can't attach)
+                let onGoo = false;
+                gooPatches.forEach(g => {
+                    if (mouseX > g.x - 30 && mouseX < g.x + g.width + 30 &&
+                        mouseY > g.y - 30 && mouseY < g.y + g.height + 30) {
+                        onGoo = true;
+                    }
+                });
+                
+                if (onGoo) return;
+                
+                // Check platforms
                 platforms.forEach(p => {
                     if (mouseX > p.x - 30 && mouseX < p.x + p.width + 30 &&
                         mouseY > p.y - 30 && mouseY < p.y + p.height + 30) {
                         grapple.active = true;
                         grapple.attachX = Math.max(p.x, Math.min(p.x + p.width, mouseX));
                         grapple.attachY = p.y;
+                        grapple.onWall = false;
                         const dx = grapple.attachX - player.x;
                         const dy = grapple.attachY - player.y;
                         grapple.length = Math.sqrt(dx * dx + dy * dy);
                     }
                 });
+                
+                // Check walls (left and right edges)
+                if (mouseX < 50 && dist <= MAX_GRAPPLE_DISTANCE) {
+                    grapple.active = true;
+                    grapple.attachX = 0;
+                    grapple.attachY = mouseY;
+                    grapple.onWall = true;
+                    grapple.length = Math.sqrt((grapple.attachX - player.x) ** 2 + (grapple.attachY - player.y) ** 2);
+                }
+                
+                if (mouseX > canvas.width - 50 && dist <= MAX_GRAPPLE_DISTANCE) {
+                    grapple.active = true;
+                    grapple.attachX = canvas.width;
+                    grapple.attachY = mouseY;
+                    grapple.onWall = true;
+                    grapple.length = Math.sqrt((grapple.attachX - player.x) ** 2 + (grapple.attachY - player.y) ** 2);
+                }
             }
         });
         
