@@ -9,76 +9,89 @@
             margin: 0;
             padding: 0;
             box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
         
         body {
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #1a2a6c);
-            font-family: 'Courier New', monospace;
+            background: linear-gradient(135deg, #1a237e, #4a148c);
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             min-height: 100vh;
             padding: 20px;
-            overflow: hidden;
             color: white;
+            overflow: hidden;
+        }
+        
+        .game-header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        
+        h1 {
+            font-size: 3.5rem;
+            margin-bottom: 10px;
+            text-shadow: 0 0 10px #ffd700, 0 0 20px #ffd700;
+            color: #ffd700;
+            letter-spacing: 2px;
+        }
+        
+        .subtitle {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 600px;
+            line-height: 1.5;
         }
         
         #game-container {
             position: relative;
             margin-bottom: 20px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
         }
         
         #game-canvas {
-            border: 4px solid #ffcc00;
-            border-radius: 8px;
-            box-shadow: 0 0 25px rgba(255, 204, 0, 0.5);
             background: #0d1b2a;
+            display: block;
         }
         
-        #ui-container {
+        .ui-panel {
             display: flex;
             justify-content: space-between;
             width: 640px;
-            margin-top: 15px;
-            padding: 10px 20px;
+            padding: 12px 20px;
             background: rgba(0, 0, 0, 0.7);
             border-radius: 10px;
-            border: 2px solid #ffcc00;
+            border: 2px solid #ffd700;
+            margin-top: 15px;
         }
         
         .stat {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
         }
         
         .stat-value {
-            font-size: 24px;
+            font-size: 1.8rem;
             font-weight: bold;
-            color: #ffcc00;
+            color: #ffd700;
         }
         
-        #controls {
+        .controls {
             text-align: center;
             margin-top: 15px;
-            font-size: 16px;
-            color: #ffcc00;
-            text-shadow: 0 0 5px rgba(255, 204, 0, 0.7);
+            font-size: 1.1rem;
+            color: #ffd700;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 8px 15px;
+            border-radius: 8px;
+            max-width: 640px;
         }
         
-        #game-title {
-            font-size: 42px;
-            margin-bottom: 20px;
-            text-align: center;
-            text-shadow: 0 0 15px #ffcc00;
-            letter-spacing: 2px;
-            color: #ffcc00;
-            font-weight: bold;
-            text-transform: uppercase;
-        }
-        
-        #screen {
+        .screen {
             position: absolute;
             top: 0;
             left: 0;
@@ -88,95 +101,83 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             z-index: 10;
-            color: white;
+            padding: 20px;
+            text-align: center;
         }
         
-        #start-screen, #gameover-screen, #win-screen {
-            display: none;
-        }
-        
-        #start-screen h2, #gameover-screen h2, #win-screen h2 {
-            font-size: 48px;
+        .screen h2 {
+            font-size: 3.5rem;
             margin-bottom: 20px;
-            color: #ffcc00;
-            text-shadow: 0 0 15px #ffcc00;
+            color: #ffd700;
+            text-shadow: 0 0 10px rgba(255, 215, 0, 0.7);
         }
         
-        #start-screen p, #gameover-screen p, #win-screen p {
-            font-size: 22px;
+        .screen p {
+            font-size: 1.4rem;
             margin: 15px 0;
             max-width: 80%;
-            text-align: center;
             line-height: 1.6;
         }
         
         .btn {
-            background: linear-gradient(to bottom, #ffcc00, #ff9900);
-            color: #1a2a6c;
+            background: linear-gradient(to bottom, #ffd700, #ff9800);
+            color: #1a237e;
             border: none;
-            padding: 12px 30px;
-            font-family: 'Courier New', monospace;
-            font-size: 20px;
-            cursor: pointer;
-            transition: all 0.2s;
-            border-radius: 8px;
+            padding: 14px 36px;
+            font-size: 1.4rem;
             font-weight: bold;
-            margin-top: 20px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+            cursor: pointer;
+            border-radius: 50px;
+            margin-top: 25px;
+            box-shadow: 0 6px 15px rgba(0, 0, 0, 0.4);
+            transition: all 0.2s;
             letter-spacing: 1px;
         }
         
         .btn:hover {
             transform: translateY(-3px);
-            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.6);
-            background: linear-gradient(to bottom, #ffd733, #ffaa00);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.5);
+            background: linear-gradient(to bottom, #ffdf33, #ffa726);
         }
         
         .instructions {
             background: rgba(30, 30, 50, 0.8);
-            padding: 15px;
-            border-radius: 10px;
-            margin: 15px 0;
-            border: 1px solid #ffcc00;
+            padding: 20px;
+            border-radius: 12px;
+            margin: 20px 0;
+            border: 1px solid #ffd700;
+            max-width: 500px;
         }
         
         .instructions h3 {
-            color: #ffcc00;
-            margin-bottom: 10px;
-            text-align: center;
+            color: #ffd700;
+            margin-bottom: 15px;
+            font-size: 1.8rem;
         }
         
         .instructions ul {
-            padding-left: 20px;
+            padding-left: 25px;
             text-align: left;
+            font-size: 1.2rem;
         }
         
         .instructions li {
-            margin: 8px 0;
+            margin: 10px 0;
         }
         
-        .tongue-meter {
-            width: 200px;
-            height: 20px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #ffcc00;
-            border-radius: 10px;
-            margin-top: 5px;
-            overflow: hidden;
-        }
-        
-        .tongue-fill {
-            height: 100%;
-            background: linear-gradient(to right, #ff3333, #ffcc00);
-            width: 100%;
-            transition: width 0.1s;
+        .highlight {
+            color: #ffd700;
+            font-weight: bold;
         }
     </style>
 </head>
 <body>
-    <h1 id="game-title">GRAPPLE TONGUE</h1>
+    <div class="game-header">
+        <h1>GRAPPLE TONGUE</h1>
+        <p class="subtitle">Swing through the jungle to collect fireflies and avoid thorns!</p>
+    </div>
     
     <div id="game-container">
         <canvas id="game-canvas" width="640" height="480"></canvas>
@@ -186,70 +187,59 @@
             <div class="instructions">
                 <h3>HOW TO PLAY</h3>
                 <ul>
-                    <li>Control the frog with <strong>Arrow Keys</strong></li>
-                    <li>Press and hold <strong>SPACEBAR</strong> to charge your tongue</li>
-                    <li>Release to shoot your tongue at platforms</li>
-                    <li>Swing around to collect <strong>FIRE FLIES</strong></li>
-                    <li>Avoid the <strong>THORNS</strong> and <strong>ACID POOLS</strong></li>
-                    <li>Collect all fireflies to win!</li>
+                    <li>Use <span class="highlight">LEFT/RIGHT ARROW KEYS</span> to move your frog</li>
+                    <li>Press <span class="highlight">SPACEBAR</span> to shoot your tongue at platforms</li>
+                    <li>Release SPACEBAR to detach and swing freely</li>
+                    <li>Collect all <span class="highlight">YELLOW FIREFLIES</span> to win</li>
+                    <li>Avoid <span class="highlight">RED THORNS</span> or it's game over!</li>
                 </ul>
             </div>
             <button id="start-btn" class="btn">START GAME</button>
         </div>
         
-        <div id="gameover-screen" class="screen">
+        <div id="gameover-screen" class="screen" style="display: none;">
             <h2>GAME OVER</h2>
             <p>You've been caught by the thorns...</p>
             <p>Fireflies collected: <span id="final-score">0</span></p>
             <button id="retry-btn" class="btn">TRY AGAIN</button>
         </div>
         
-        <div id="win-screen" class="screen">
+        <div id="win-screen" class="screen" style="display: none;">
             <h2>YOU WIN!</h2>
             <p>Congratulations! You've collected all fireflies!</p>
-            <p>Total time: <span id="final-time">0</span>s</p>
+            <p>Total time: <span id="final-time">0</span> seconds</p>
             <button id="win-retry-btn" class="btn">PLAY AGAIN</button>
         </div>
     </div>
     
-    <div id="ui-container">
+    <div class="ui-panel">
         <div class="stat">
-            <div>Fireflies: </div>
-            <div class="stat-value" id="score">0</div>
-            <div>/ <span id="total-fireflies">10</span></div>
+            <span>Fireflies:</span>
+            <span class="stat-value" id="score">0</span>
+            <span>/5</span>
         </div>
         <div class="stat">
-            <div>Time: </div>
-            <div class="stat-value" id="time">0</div>
-            <div>s</div>
-        </div>
-        <div class="stat">
-            <div>Tongue: </div>
-            <div class="tongue-meter">
-                <div class="tongue-fill" id="tongue-fill"></div>
-            </div>
+            <span>Time:</span>
+            <span class="stat-value" id="time">0</span>
+            <span>s</span>
         </div>
     </div>
     
-    <div id="controls">
-        Arrow Keys to move • Hold SPACE to charge tongue • Release to grapple
+    <div class="controls">
+        LEFT/RIGHT ARROWS to move • SPACEBAR to grapple
     </div>
 
     <script>
         // Game constants
         const GRAVITY = 0.5;
-        const PLAYER_JUMP = -12;
         const PLAYER_SPEED = 5;
-        const TONGUE_SPEED = 15;
-        const MAX_TONGUE_LENGTH = 300;
-        const TOTAL_FIREFLIES = 10;
+        const JUMP_FORCE = -12;
+        const TOTAL_FIREFLIES = 5;
         
         // Game state
         let gameState = 'start'; // 'start', 'playing', 'gameover', 'win'
         let score = 0;
         let gameTime = 0;
-        let tongueCharge = 0;
-        let isCharging = false;
         let gameLoop;
         
         // Player properties
@@ -260,7 +250,7 @@
             height: 30,
             vx: 0,
             vy: 0,
-            color: '#4ade80',
+            color: '#4CAF50',
             isOnGround: false,
             grappled: false,
             grapplePoint: null,
@@ -271,7 +261,6 @@
         let platforms = [];
         let fireflies = [];
         let thorns = [];
-        let acidPools = [];
         let particles = [];
         
         // DOM elements
@@ -279,8 +268,6 @@
         const ctx = canvas.getContext('2d');
         const scoreEl = document.getElementById('score');
         const timeEl = document.getElementById('time');
-        const tongueFillEl = document.getElementById('tongue-fill');
-        const totalFirefliesEl = document.getElementById('total-fireflies');
         const finalScoreEl = document.getElementById('final-score');
         const finalTimeEl = document.getElementById('final-time');
         const startScreen = document.getElementById('start-screen');
@@ -294,19 +281,14 @@
         const keys = {
             ArrowLeft: false,
             ArrowRight: false,
-            ArrowUp: false,
-            ArrowDown: false,
             ' ': false
         };
         
         // Initialize game
         function initGame() {
-            // Reset game state
             gameState = 'playing';
             score = 0;
             gameTime = 0;
-            tongueCharge = 0;
-            isCharging = false;
             
             // Reset player
             player.x = 100;
@@ -322,51 +304,41 @@
             platforms = [];
             fireflies = [];
             thorns = [];
-            acidPools = [];
             particles = [];
             
             // Create platforms
-            platforms.push(
-                {x: 0, y: 450, width: 200, height: 30, color: '#7e22ce'},
-                {x: 250, y: 400, width: 150, height: 30, color: '#7e22ce'},
-                {x: 450, y: 350, width: 190, height: 30, color: '#7e22ce'},
-                {x: 100, y: 300, width: 120, height: 30, color: '#7e22ce'},
-                {x: 300, y: 250, width: 150, height: 30, color: '#7e22ce'},
-                {x: 500, y: 200, width: 140, height: 30, color: '#7e22ce'},
-                {x: 200, y: 150, width: 180, height: 30, color: '#7e22ce'},
-                {x: 0, y: 100, width: 150, height: 30, color: '#7e22ce'}
-            );
+            platforms = [
+                {x: 0, y: 450, width: 200, height: 30, color: '#7B1FA2'},
+                {x: 250, y: 400, width: 150, height: 30, color: '#7B1FA2'},
+                {x: 450, y: 350, width: 190, height: 30, color: '#7B1FA2'},
+                {x: 100, y: 300, width: 120, height: 30, color: '#7B1FA2'},
+                {x: 300, y: 250, width: 150, height: 30, color: '#7B1FA2'},
+                {x: 500, y: 200, width: 140, height: 30, color: '#7B1FA2'},
+                {x: 200, y: 150, width: 180, height: 30, color: '#7B1FA2'},
+                {x: 0, y: 100, width: 150, height: 30, color: '#7B1FA2'}
+            ];
             
             // Create thorns (on platforms)
-            thorns.push(
+            thorns = [
                 {x: 50, y: 420, width: 30, height: 30},
                 {x: 300, y: 370, width: 30, height: 30},
                 {x: 500, y: 320, width: 30, height: 30},
                 {x: 150, y: 270, width: 30, height: 30},
                 {x: 350, y: 220, width: 30, height: 30}
-            );
+            ];
             
-            // Create acid pools
-            acidPools.push(
-                {x: 200, y: 450, width: 200, height: 30},
-                {x: 500, y: 450, width: 140, height: 30}
-            );
-            
-            // Create fireflies
-            for (let i = 0; i < TOTAL_FIREFLIES; i++) {
-                fireflies.push({
-                    x: 50 + Math.random() * 540,
-                    y: 50 + Math.random() * 350,
-                    radius: 8,
-                    pulse: 0,
-                    collected: false
-                });
-            }
+            // Create fireflies at fixed positions
+            fireflies = [
+                {x: 150, y: 200, radius: 8, collected: false},
+                {x: 350, y: 150, radius: 8, collected: false},
+                {x: 550, y: 100, radius: 8, collected: false},
+                {x: 200, y: 350, radius: 8, collected: false},
+                {x: 400, y: 300, radius: 8, collected: false}
+            ];
             
             // Update UI
             scoreEl.textContent = score;
             timeEl.textContent = gameTime;
-            totalFirefliesEl.textContent = TOTAL_FIREFLIES;
             
             // Hide screens
             startScreen.style.display = 'none';
@@ -389,22 +361,22 @@
                 keys[e.key] = true;
             }
             
-            // Spacebar for charging tongue
+            // Spacebar to toggle grapple
             if (e.key === ' ' && gameState === 'playing') {
-                isCharging = true;
-                tongueCharge = 0;
+                if (!player.grappled) {
+                    // Try to grapple to a platform
+                    grappleToPlatform();
+                } else {
+                    // Release grapple
+                    player.grappled = false;
+                    player.grapplePoint = null;
+                }
             }
         });
         
         window.addEventListener('keyup', (e) => {
             if (keys.hasOwnProperty(e.key)) {
                 keys[e.key] = false;
-            }
-            
-            // Release spacebar to shoot tongue
-            if (e.key === ' ' && isCharging && gameState === 'playing') {
-                shootTongue();
-                isCharging = false;
             }
         });
         
@@ -413,41 +385,31 @@
         retryBtn.addEventListener('click', initGame);
         winRetryBtn.addEventListener('click', initGame);
         
-        // Shoot tongue at mouse position
-        function shootTongue() {
-            if (player.grappled) return;
-            
-            // Calculate tongue direction based on player facing
-            let directionX = keys.ArrowRight ? 1 : (keys.ArrowLeft ? -1 : 1); // Default to right
-            
-            // Find the first platform in the direction
-            let grapplePoint = null;
-            let minDist = MAX_TONGUE_LENGTH;
+        // Grapple to nearest platform above
+        function grappleToPlatform() {
+            // Look for platforms above the player
+            let bestPlatform = null;
+            let minDist = 300; // Max grapple distance
             
             for (const platform of platforms) {
-                // Check if platform is in the direction we're shooting
-                if (directionX > 0 && platform.x > player.x + player.width) {
-                    const dist = platform.x - (player.x + player.width);
-                    if (dist < minDist && 
-                        player.y + player.height > platform.y && 
-                        player.y < platform.y + platform.height) {
+                // Check if platform is above the player and within horizontal range
+                if (platform.y + platform.height < player.y && 
+                    platform.x - 20 < player.x + player.width/2 && 
+                    platform.x + platform.width + 20 > player.x + player.width/2) {
+                    const dist = player.y - (platform.y + platform.height);
+                    if (dist < minDist) {
                         minDist = dist;
-                        grapplePoint = {x: platform.x, y: player.y + player.height/2};
-                    }
-                } else if (directionX < 0 && platform.x + platform.width < player.x) {
-                    const dist = player.x - (platform.x + platform.width);
-                    if (dist < minDist && 
-                        player.y + player.height > platform.y && 
-                        player.y < platform.y + platform.height) {
-                        minDist = dist;
-                        grapplePoint = {x: platform.x + platform.width, y: player.y + player.height/2};
+                        bestPlatform = platform;
                     }
                 }
             }
             
-            if (grapplePoint) {
+            if (bestPlatform) {
                 player.grappled = true;
-                player.grapplePoint = grapplePoint;
+                player.grapplePoint = {
+                    x: player.x + player.width/2,
+                    y: bestPlatform.y + bestPlatform.height
+                };
                 player.tongueLength = minDist;
             }
         }
@@ -457,16 +419,8 @@
             if (gameState !== 'playing') return;
             
             // Update game time
-            gameTime += 0.016; // Approx 60fps
+            gameTime += 0.016;
             timeEl.textContent = Math.floor(gameTime);
-            
-            // Update tongue charge
-            if (isCharging) {
-                tongueCharge = Math.min(tongueCharge + 2, 100);
-                tongueFillEl.style.width = tongueCharge + '%';
-            } else {
-                tongueFillEl.style.width = '0%';
-            }
             
             // Handle player input
             player.vx = 0;
@@ -504,18 +458,11 @@
                     player.vx = -ny * speed;
                     player.vy = nx * speed;
                 }
-                
-                // Release grapple if too far or on ground
-                if (dist > MAX_TONGUE_LENGTH || player.isOnGround) {
-                    player.grappled = false;
-                    player.grapplePoint = null;
-                }
             }
             
             // Platform collision detection
             player.isOnGround = false;
             for (const platform of platforms) {
-                // Check if player is colliding with platform
                 if (player.x < platform.x + platform.width &&
                     player.x + player.width > platform.x &&
                     player.y < platform.y + platform.height &&
@@ -532,14 +479,10 @@
                         player.y = platform.y + platform.height;
                         player.vy = 0;
                     }
-                    // Collision from left
-                    else if (player.vx > 0 && player.x + player.width - player.vx <= platform.x) {
-                        player.x = platform.x - player.width;
-                        player.vx = 0;
-                    }
-                    // Collision from right
-                    else if (player.vx < 0 && player.x - player.vx >= platform.x + platform.width) {
-                        player.x = platform.x + platform.width;
+                    // Collision from left/right
+                    else if (player.vx !== 0) {
+                        if (player.vx > 0) player.x = platform.x - player.width;
+                        else player.x = platform.x + platform.width;
                         player.vx = 0;
                     }
                 }
@@ -551,17 +494,6 @@
                     player.x + player.width > thorn.x &&
                     player.y < thorn.y + thorn.height &&
                     player.y + player.height > thorn.y) {
-                    gameOver();
-                    return;
-                }
-            }
-            
-            // Acid pools collision
-            for (const pool of acidPools) {
-                if (player.x < pool.x + pool.width &&
-                    player.x + player.width > pool.x &&
-                    player.y < pool.y + pool.height &&
-                    player.y + player.height > pool.y) {
                     gameOver();
                     return;
                 }
@@ -588,7 +520,7 @@
                                 vx: (Math.random() - 0.5) * 6,
                                 vy: (Math.random() - 0.5) * 6,
                                 life: 30,
-                                color: '#ffcc00'
+                                color: '#FFD700'
                             });
                         }
                         
@@ -638,42 +570,19 @@
             // Draw background elements
             drawBackground();
             
-            // Draw acid pools
-            for (const pool of acidPools) {
-                ctx.fillStyle = '#22c55e';
-                ctx.globalAlpha = 0.7;
-                ctx.fillRect(pool.x, pool.y, pool.width, pool.height);
-                ctx.globalAlpha = 1;
-                
-                // Acid bubbles
-                ctx.fillStyle = 'rgba(255, 255, 255, 0.5)';
-                for (let i = 0; i < 5; i++) {
-                    const size = 3 + Math.random() * 4;
-                    ctx.beginPath();
-                    ctx.arc(
-                        pool.x + Math.random() * pool.width,
-                        pool.y + Math.random() * 10,
-                        size,
-                        0,
-                        Math.PI * 2
-                    );
-                    ctx.fill();
-                }
-            }
-            
             // Draw platforms
             for (const platform of platforms) {
                 ctx.fillStyle = platform.color;
                 ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
                 
                 // Platform top highlight
-                ctx.fillStyle = '#a855f7';
+                ctx.fillStyle = '#CE93D8';
                 ctx.fillRect(platform.x, platform.y, platform.width, 5);
             }
             
             // Draw thorns
             for (const thorn of thorns) {
-                ctx.fillStyle = '#dc2626';
+                ctx.fillStyle = '#F44336';
                 ctx.beginPath();
                 ctx.moveTo(thorn.x, thorn.y + thorn.height);
                 ctx.lineTo(thorn.x + thorn.width/2, thorn.y);
@@ -685,20 +594,16 @@
             // Draw fireflies
             for (const fly of fireflies) {
                 if (!fly.collected) {
-                    // Pulse effect
-                    fly.pulse = (fly.pulse + 0.1) % (Math.PI * 2);
-                    const pulseSize = 8 + Math.sin(fly.pulse) * 2;
-                    
-                    // Glow
-                    ctx.fillStyle = 'rgba(255, 204, 0, 0.7)';
+                    // Glow effect
+                    ctx.fillStyle = 'rgba(255, 215, 0, 0.5)';
                     ctx.beginPath();
-                    ctx.arc(fly.x, fly.y, pulseSize + 5, 0, Math.PI * 2);
+                    ctx.arc(fly.x, fly.y, fly.radius + 5, 0, Math.PI * 2);
                     ctx.fill();
                     
                     // Firefly body
-                    ctx.fillStyle = '#ffcc00';
+                    ctx.fillStyle = '#FFD700';
                     ctx.beginPath();
-                    ctx.arc(fly.x, fly.y, pulseSize, 0, Math.PI * 2);
+                    ctx.arc(fly.x, fly.y, fly.radius, 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
@@ -715,7 +620,7 @@
             
             // Draw tongue if grappled
             if (player.grappled && player.grapplePoint) {
-                ctx.strokeStyle = '#ff3333';
+                ctx.strokeStyle = '#FF5252';
                 ctx.lineWidth = 4;
                 ctx.beginPath();
                 ctx.moveTo(player.x + player.width/2, player.y + player.height/2);
@@ -737,13 +642,6 @@
             ctx.beginPath();
             ctx.arc(player.x + player.width/2 + 6, player.y + player.height/2 - 5, 4, 0, Math.PI * 2);
             ctx.fill();
-            
-            // Frog smile
-            ctx.strokeStyle = '#000';
-            ctx.lineWidth = 2;
-            ctx.beginPath();
-            ctx.arc(player.x + player.width/2, player.y + player.height/2 + 5, 8, 0, Math.PI);
-            ctx.stroke();
         }
         
         // Draw background elements
@@ -757,15 +655,6 @@
                 ctx.beginPath();
                 ctx.arc(x, y, size, 0, Math.PI * 2);
                 ctx.fill();
-            }
-            
-            // Distant platforms
-            ctx.fillStyle = 'rgba(126, 34, 206, 0.2)';
-            for (let i = 0; i < 5; i++) {
-                const x = Math.random() * canvas.width;
-                const y = Math.random() * 100;
-                const width = 50 + Math.random() * 100;
-                ctx.fillRect(x, y, width, 15);
             }
         }
         
@@ -783,8 +672,7 @@
             winScreen.style.display = 'flex';
         }
         
-        // Initial setup
-        startScreen.style.display = 'flex';
+        // Initial render
         render();
     </script>
 </body>
