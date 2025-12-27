@@ -380,6 +380,11 @@
         
         // Handle key events
         window.addEventListener('keydown', (e) => {
+            // Prevent scrolling with arrow keys and spacebar
+            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
+                e.preventDefault();
+            }
+            
             if (keys.hasOwnProperty(e.key)) {
                 keys[e.key] = true;
             }
@@ -413,8 +418,7 @@
             if (player.grappled) return;
             
             // Calculate tongue direction based on player facing
-            let directionX = keys.ArrowRight ? 1 : (keys.ArrowLeft ? -1 : 0);
-            if (directionX === 0) directionX = 1; // Default to right
+            let directionX = keys.ArrowRight ? 1 : (keys.ArrowLeft ? -1 : 1); // Default to right
             
             // Find the first platform in the direction
             let grapplePoint = null;
@@ -779,7 +783,8 @@
             winScreen.style.display = 'flex';
         }
         
-        // Initial render
+        // Initial setup
+        startScreen.style.display = 'flex';
         render();
     </script>
 </body>
