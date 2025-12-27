@@ -3,307 +3,430 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grapple Tongue - Working</title>
+    <title>Grapple Tongue Game</title>
     <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
         }
         
         body {
-            background: #1a1a2e;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: 20px;
-            color: white;
-        }
-        
-        #game-container {
-            position: relative;
-            margin-bottom: 20px;
-            border: 3px solid #4a4a8a;
-            border-radius: 10px;
             overflow: hidden;
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+            font-family: Arial, sans-serif;
         }
         
-        #game-canvas {
-            background: #0d0d1a;
+        #gameCanvas {
             display: block;
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
         }
         
-        .ui {
-            display: flex;
-            gap: 30px;
-            margin-top: 15px;
-            font-size: 18px;
-        }
-        
-        .controls {
-            text-align: center;
-            margin-top: 15px;
-            color: #4cc9f0;
-            font-size: 16px;
-        }
-        
-        #screen {
+        #ui {
             position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            background: rgba(0, 0, 0, 0.85);
-            z-index: 10;
+            top: 20px;
+            left: 20px;
             color: white;
+            font-size: 20px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            z-index: 10;
         }
         
-        #start-screen h2 {
+        #instructions {
+            position: absolute;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            color: white;
+            font-size: 16px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.5);
+            text-align: center;
+            z-index: 10;
+        }
+
+        #levelComplete {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            display: none;
+            z-index: 100;
+        }
+
+        #levelComplete h2 {
             font-size: 36px;
             margin-bottom: 20px;
-            color: #4cc9f0;
+            color: #FFD700;
         }
-        
-        .btn {
-            background: #4361ee;
+
+        #levelComplete button {
+            background: #4CAF50;
             color: white;
             border: none;
-            padding: 12px 30px;
-            font-size: 18px;
+            padding: 15px 30px;
+            font-size: 20px;
+            border-radius: 10px;
             cursor: pointer;
-            border-radius: 8px;
             margin-top: 20px;
-            font-weight: bold;
         }
-        
-        .btn:hover {
-            background: #3a56e4;
+
+        #levelComplete button:hover {
+            background: #45a049;
         }
     </style>
 </head>
 <body>
-    <h1 style="color: #4cc9f0; margin-bottom: 20px; text-align: center;">GRAPPLE TONGUE</h1>
-    
-    <div id="game-container">
-        <canvas id="game-canvas" width="640" height="480"></canvas>
-        
-        <div id="start-screen" class="screen">
-            <h2>GRAPPLE TONGUE</h2>
-            <p>Press SPACEBAR to shoot your tongue at platforms</p>
-            <p>Collect yellow circles to win!</p>
-            <button id="start-btn" class="btn">START GAME</button>
-        </div>
+    <div id="ui">
+        <div>Level: <span id="level">1</span></div>
+        <div>Score: <span id="score">0</span></div>
+        <div>Coins: <span id="coinsCollected">0</span>/<span id="totalCoins">0</span></div>
     </div>
-    
-    <div class="ui">
-        <div>Score: <span id="score">0</span>/5</div>
-        <div>Time: <span id="time">0</span>s</div>
+    <div id="instructions">
+        Click to shoot grapple tongue | Collect all coins to advance | Avoid falling!
     </div>
-    
-    <div class="controls">
-        LEFT/RIGHT ARROWS to move • SPACEBAR to shoot tongue
+    <div id="levelComplete">
+        <h2>Level Complete!</h2>
+        <p id="levelStats"></p>
+        <button onclick="nextLevel()">Next Level</button>
     </div>
+    <canvas id="gameCanvas"></canvas>
 
     <script>
-        // Game state
-        let gameState = 'start';
-        let score = 0;
-        let gameTime = 0;
-        let isShooting = false;
-        let tongueLength = 0;
-        let maxTongueLength = 200;
-        let gameLoop;
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
         
-        // Player
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        
         const player = {
             x: 100,
-            y: 400,
-            width: 30,
-            height: 30,
+            y: 500,
             vx: 0,
             vy: 0,
-            color: '#4CAF50'
+            radius: 15,
+            color: '#FF6B6B'
         };
         
-        // Platforms
-        const platforms = [
-            {x: 200, y: 300, width: 100, height: 20, color: '#7B1FA2'},
-            {x: 400, y: 200, width: 100, height: 20, color: '#7B1FA2'},
-            {x: 200, y: 100, width: 100, height: 20, color: '#7B1FA2'}
-        ];
-        
-        // Collectibles
-        const collectibles = [
-            {x: 250, y: 280, radius: 10, collected: false},
-            {x: 450, y: 180, radius: 10, collected: false},
-            {x: 250, y: 80, radius: 10, collected: false},
-            {x: 100, y: 350, radius: 10, collected: false},
-            {x: 500, y: 350, radius: 10, collected: false}
-        ];
-        
-        // DOM elements
-        const canvas = document.getElementById('game-canvas');
-        const ctx = canvas.getContext('2d');
-        const scoreEl = document.getElementById('score');
-        const timeEl = document.getElementById('time');
-        const startScreen = document.getElementById('start-screen');
-        const startBtn = document.getElementById('start-btn');
-        
-        // Key state
-        const keys = {
-            ArrowLeft: false,
-            ArrowRight: false
+        const grapple = {
+            active: false,
+            attachX: 0,
+            attachY: 0,
+            length: 0
         };
         
-        // Initialize game
-        function initGame() {
-            gameState = 'playing';
-            score = 0;
-            gameTime = 0;
-            isShooting = false;
-            tongueLength = 0;
+        let platforms = [];
+        let coins = [];
+        let score = 0;
+        let currentLevel = 1;
+        let coinsCollected = 0;
+        let totalCoins = 0;
+        
+        const gravity = 0.4;
+        const dampening = 0.98;
+        
+        const levels = [
+            // Level 1 - Easy Tutorial
+            {
+                platforms: [
+                    { x: 50, y: 550, width: 150, height: 20 },
+                    { x: 300, y: 450, width: 150, height: 20 },
+                    { x: 550, y: 500, width: 150, height: 20 },
+                    { x: 800, y: 400, width: 150, height: 20 }
+                ],
+                spawnX: 125,
+                spawnY: 520
+            },
+            // Level 2 - Vertical Challenge
+            {
+                platforms: [
+                    { x: 100, y: 550, width: 120, height: 20 },
+                    { x: 350, y: 450, width: 120, height: 20 },
+                    { x: 150, y: 350, width: 120, height: 20 },
+                    { x: 450, y: 250, width: 120, height: 20 },
+                    { x: 250, y: 150, width: 120, height: 20 }
+                ],
+                spawnX: 160,
+                spawnY: 520
+            },
+            // Level 3 - Wide Gaps
+            {
+                platforms: [
+                    { x: 50, y: 500, width: 100, height: 20 },
+                    { x: 400, y: 450, width: 100, height: 20 },
+                    { x: 750, y: 500, width: 100, height: 20 },
+                    { x: 250, y: 300, width: 100, height: 20 },
+                    { x: 600, y: 250, width: 100, height: 20 }
+                ],
+                spawnX: 100,
+                spawnY: 470
+            },
+            // Level 4 - Zigzag
+            {
+                platforms: [
+                    { x: 50, y: 550, width: 100, height: 20 },
+                    { x: 300, y: 450, width: 80, height: 20 },
+                    { x: 100, y: 350, width: 80, height: 20 },
+                    { x: 350, y: 250, width: 80, height: 20 },
+                    { x: 150, y: 150, width: 80, height: 20 },
+                    { x: 650, y: 100, width: 100, height: 20 }
+                ],
+                spawnX: 100,
+                spawnY: 520
+            },
+            // Level 5 - The Gauntlet
+            {
+                platforms: [
+                    { x: 50, y: 520, width: 100, height: 20 },
+                    { x: 250, y: 400, width: 70, height: 20 },
+                    { x: 450, y: 450, width: 70, height: 20 },
+                    { x: 650, y: 300, width: 70, height: 20 },
+                    { x: 500, y: 200, width: 70, height: 20 },
+                    { x: 300, y: 150, width: 70, height: 20 },
+                    { x: 550, y: 50, width: 120, height: 20 }
+                ],
+                spawnX: 100,
+                spawnY: 490
+            }
+        ];
+        
+        function loadLevel(levelNum) {
+            if (levelNum > levels.length) {
+                showVictoryScreen();
+                return;
+            }
             
-            player.x = 100;
-            player.y = 400;
+            currentLevel = levelNum;
+            const level = levels[levelNum - 1];
+            platforms = JSON.parse(JSON.stringify(level.platforms));
+            
+            player.x = level.spawnX;
+            player.y = level.spawnY;
             player.vx = 0;
             player.vy = 0;
+            grapple.active = false;
             
-            // Reset collectibles
-            collectibles.forEach(c => c.collected = false);
-            
-            scoreEl.textContent = score;
-            timeEl.textContent = gameTime;
-            startScreen.style.display = 'none';
-            
-            if (gameLoop) cancelAnimationFrame(gameLoop);
-            gameLoop = requestAnimationFrame(update);
-        }
-        
-        // Event listeners
-        startBtn.addEventListener('click', initGame);
-        
-        window.addEventListener('keydown', (e) => {
-            if (e.key === 'ArrowLeft') keys.ArrowLeft = true;
-            if (e.key === 'ArrowRight') keys.ArrowRight = true;
-            
-            // Spacebar to shoot tongue
-            if (e.key === ' ' && gameState === 'playing') {
-                isShooting = true;
-                tongueLength = 0;
-            }
-            
-            // Prevent scrolling
-            if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', ' '].includes(e.key)) {
-                e.preventDefault();
-            }
-        });
-        
-        window.addEventListener('keyup', (e) => {
-            if (e.key === 'ArrowLeft') keys.ArrowLeft = false;
-            if (e.key === 'ArrowRight') keys.ArrowRight = false;
-            
-            if (e.key === ' ') {
-                isShooting = false;
-            }
-        });
-        
-        // Update game
-        function update() {
-            if (gameState !== 'playing') return;
-            
-            // Update time
-            gameTime += 0.016;
-            timeEl.textContent = Math.floor(gameTime);
-            
-            // Handle movement
-            player.vx = 0;
-            if (keys.ArrowLeft) player.vx = -5;
-            if (keys.ArrowRight) player.vx = 5;
-            player.x += player.vx;
-            
-            // Handle tongue shooting
-            if (isShooting) {
-                tongueLength = Math.min(tongueLength + 10, maxTongueLength);
-            }
-            
-            // Collectibles collision
-            for (let i = 0; i < collectibles.length; i++) {
-                const c = collectibles[i];
-                if (!c.collected) {
-                    const dx = player.x + player.width/2 - c.x;
-                    const dy = player.y + player.height/2 - c.y;
-                    const dist = Math.sqrt(dx*dx + dy*dy);
-                    
-                    if (dist < player.width/2 + c.radius) {
-                        c.collected = true;
-                        score++;
-                        scoreEl.textContent = score;
-                        
-                        if (score >= 5) {
-                            alert('You win! Time: ' + Math.floor(gameTime) + 's');
-                            gameState = 'start';
-                            startScreen.style.display = 'flex';
-                            return;
-                        }
-                    }
+            // Generate coins closer to platforms
+            coins = [];
+            platforms.forEach((p, i) => {
+                if (i > 0) { // Skip first platform (spawn)
+                    coins.push({
+                        x: p.x + p.width / 2,
+                        y: p.y - 25,
+                        radius: 12,
+                        collected: false
+                    });
                 }
-            }
-            
-            // Boundary checks
-            if (player.x < 0) player.x = 0;
-            if (player.x + player.width > canvas.width) player.x = canvas.width - player.width;
-            
-            // Render
-            render();
-            gameLoop = requestAnimationFrame(update);
-        }
-        
-        // Render game
-        function render() {
-            // Clear canvas
-            ctx.fillStyle = '#0d0d1a';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // Draw platforms
-            platforms.forEach(platform => {
-                ctx.fillStyle = platform.color;
-                ctx.fillRect(platform.x, platform.y, platform.width, platform.height);
             });
             
-            // Draw tongue if shooting
-            if (isShooting && tongueLength > 0) {
-                ctx.strokeStyle = '#FF5252';
-                ctx.lineWidth = 4;
-                ctx.beginPath();
-                ctx.moveTo(player.x + player.width/2, player.y + player.height/2);
-                ctx.lineTo(player.x + player.width/2, player.y + player.height/2 - tongueLength);
-                ctx.stroke();
-            }
+            coinsCollected = 0;
+            totalCoins = coins.length;
             
-            // Draw collectibles
-            collectibles.forEach(c => {
+            document.getElementById('level').textContent = currentLevel;
+            document.getElementById('coinsCollected').textContent = coinsCollected;
+            document.getElementById('totalCoins').textContent = totalCoins;
+        }
+        
+        function showVictoryScreen() {
+            document.getElementById('levelComplete').innerHTML = `
+                <h2 style="color: #FFD700; font-size: 48px;">🎉 You Win! 🎉</h2>
+                <p style="font-size: 24px; margin-top: 20px;">All levels completed!</p>
+                <p style="font-size: 20px; margin-top: 10px;">Final Score: ${score}</p>
+                <button onclick="location.reload()" style="background: #2196F3; margin-top: 30px;">Play Again</button>
+            `;
+            document.getElementById('levelComplete').style.display = 'block';
+        }
+        
+        function checkLevelComplete() {
+            if (coinsCollected >= totalCoins) {
+                const levelScore = 100 + (totalCoins * 10);
+                score += levelScore;
+                document.getElementById('score').textContent = score;
+                
+                document.getElementById('levelStats').innerHTML = `
+                    <p style="font-size: 20px;">Coins Collected: ${coinsCollected}/${totalCoins}</p>
+                    <p style="font-size: 20px;">Level Score: +${levelScore}</p>
+                    <p style="font-size: 24px; margin-top: 10px;">Total Score: ${score}</p>
+                `;
+                document.getElementById('levelComplete').style.display = 'block';
+            }
+        }
+        
+        window.nextLevel = function() {
+            document.getElementById('levelComplete').style.display = 'none';
+            loadLevel(currentLevel + 1);
+        }
+        
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            ctx.beginPath();
+            ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+            ctx.fill();
+            
+            // Eye
+            ctx.fillStyle = 'white';
+            ctx.beginPath();
+            ctx.arc(player.x - 5, player.y - 3, 4, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.arc(player.x - 5, player.y - 3, 2, 0, Math.PI * 2);
+            ctx.fill();
+        }
+        
+        function drawGrapple() {
+            if (grapple.active) {
+                ctx.strokeStyle = '#FF1493';
+                ctx.lineWidth = 3;
+                ctx.beginPath();
+                ctx.moveTo(player.x, player.y);
+                ctx.lineTo(grapple.attachX, grapple.attachY);
+                ctx.stroke();
+                
+                ctx.fillStyle = '#FF69B4';
+                ctx.beginPath();
+                ctx.arc(grapple.attachX, grapple.attachY, 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+        
+        function drawPlatforms() {
+            ctx.fillStyle = '#8B4513';
+            platforms.forEach(p => {
+                ctx.fillRect(p.x, p.y, p.width, p.height);
+                ctx.strokeStyle = '#654321';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(p.x, p.y, p.width, p.height);
+            });
+        }
+        
+        function drawCoins() {
+            coins.forEach(c => {
                 if (!c.collected) {
                     ctx.fillStyle = '#FFD700';
                     ctx.beginPath();
                     ctx.arc(c.x, c.y, c.radius, 0, Math.PI * 2);
                     ctx.fill();
+                    ctx.strokeStyle = '#FFA500';
+                    ctx.lineWidth = 2;
+                    ctx.stroke();
+                }
+            });
+        }
+        
+        function updatePhysics() {
+            if (grapple.active) {
+                const dx = grapple.attachX - player.x;
+                const dy = grapple.attachY - player.y;
+                const dist = Math.sqrt(dx * dx + dy * dy);
+                const angle = Math.atan2(dy, dx);
+                
+                if (dist > grapple.length) {
+                    const diff = dist - grapple.length;
+                    player.x += Math.cos(angle) * diff * 0.6;
+                    player.y += Math.sin(angle) * diff * 0.6;
+                }
+                
+                const tension = 1.2;
+                player.vx += (grapple.attachX - player.x) / dist * tension;
+                player.vy += (grapple.attachY - player.y) / dist * tension;
+            }
+            
+            player.vy += gravity;
+            player.x += player.vx;
+            player.y += player.vy;
+            player.vx *= dampening;
+            player.vy *= dampening;
+            
+            platforms.forEach(p => {
+                if (player.x + player.radius > p.x && 
+                    player.x - player.radius < p.x + p.width &&
+                    player.y + player.radius > p.y && 
+                    player.y - player.radius < p.y + p.height) {
+                    
+                    if (player.vy > 0 && player.y < p.y + p.height / 2) {
+                        player.y = p.y - player.radius;
+                        player.vy = 0;
+                        player.vx *= 0.8;
+                    }
                 }
             });
             
-            // Draw player
-            ctx.fillStyle = player.color;
-            ctx.fillRect(player.x, player.y, player.width, player.height);
+            coins.forEach(c => {
+                if (!c.collected) {
+                    const dx = player.x - c.x;
+                    const dy = player.y - c.y;
+                    const dist = Math.sqrt(dx * dx + dy * dy);
+                    if (dist < player.radius + c.radius + 5) {
+                        c.collected = true;
+                        coinsCollected++;
+                        score += 10;
+                        document.getElementById('score').textContent = score;
+                        document.getElementById('coinsCollected').textContent = coinsCollected;
+                        checkLevelComplete();
+                    }
+                }
+            });
+            
+            if (player.y > canvas.height + 50) {
+                player.x = levels[currentLevel - 1].spawnX;
+                player.y = levels[currentLevel - 1].spawnY;
+                player.vx = 0;
+                player.vy = 0;
+                grapple.active = false;
+                score = Math.max(0, score - 20);
+                document.getElementById('score').textContent = score;
+            }
+            
+            if (player.x < player.radius) player.x = player.radius;
+            if (player.x > canvas.width - player.radius) player.x = canvas.width - player.radius;
         }
         
-        // Initial render
-        render();
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            drawPlatforms();
+            drawCoins();
+            drawGrapple();
+            drawPlayer();
+            updatePhysics();
+            
+            requestAnimationFrame(gameLoop);
+        }
+        
+        canvas.addEventListener('click', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            if (grapple.active) {
+                grapple.active = false;
+            } else {
+                platforms.forEach(p => {
+                    if (mouseX > p.x - 30 && mouseX < p.x + p.width + 30 &&
+                        mouseY > p.y - 30 && mouseY < p.y + p.height + 30) {
+                        grapple.active = true;
+                        grapple.attachX = Math.max(p.x, Math.min(p.x + p.width, mouseX));
+                        grapple.attachY = p.y;
+                        const dx = grapple.attachX - player.x;
+                        const dy = grapple.attachY - player.y;
+                        grapple.length = Math.sqrt(dx * dx + dy * dy);
+                    }
+                });
+            }
+        });
+        
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+        
+        loadLevel(1);
+        gameLoop();
     </script>
 </body>
 </html>
